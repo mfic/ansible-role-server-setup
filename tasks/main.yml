@@ -1,0 +1,7 @@
+---
+- name: Update the system
+  ansible.builtin.include_tasks: packages.yml
+- name: Add user
+  ansible.builtin.include_tasks: add_user.yml
+- name: Set security defaults
+  ansible.builtin.include_tasks: security.yml

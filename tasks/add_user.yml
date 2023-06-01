@@ -1,0 +1,54 @@
+---
+- name: Check if there are any users to add to the docker group.
+  ansible.builtin.set_fact:
+    server_setup_at_least_one_user_to_modify: true
+  when:
+    - docker_users | length > 0
+  with_items: "{{ docker_users }}"
+
+- name: Add user
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: /bin/bash
+  with_items: "{{ users }}"
+
+- name: Add docker user
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: present
+    shell: /sbin/nologin
+    create_home: false
+  when: server_setup_at_least_one_user_to_modify is defined
+  with_items: "{{ docker_users }}"
+
+
+- name: Add .ssh directory
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    mode: "0700"
+    owner: "{{ item.name }}"
+    group: "{{ item.group }}"
+  with_items: "{{ users }}"
+
+- name: Add key
+  ansible.builtin.lineinfile:
+    dest: "/home/{{ item.name }}/.ssh/authorized_keys"
+    state: present
+    create: true
+    line: "{{ item.auth_key }}"
+    owner: "{{ item.name }}"
+    group: "{{ item.group }}"
+    mode: "0600"
+  with_items: "{{ users }}"
+
+# Use `sudo`.
+- name: Add sudo rights for deployment user.
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    regexp: "^{{ item.name }}"
+    line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    validate: "visudo -cf %s"
+  with_items:
+    - "{{ users }}"

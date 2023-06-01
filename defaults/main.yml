@@ -1,0 +1,13 @@
+packages_present_debian:
+  - unattended-upgrades
+  - iptables
+  - fail2ban
+  - sudo
+  - vim
+  - tmux
+  - ranger
+  - htop
+
+packages_absent_debian:
+  - nano
+  - sendmail

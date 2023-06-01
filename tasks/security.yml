@@ -1,0 +1,31 @@
+---
+# Use secure and encrypted communication.
+- name: Update SSH configuration to be more secure.
+  ansible.builtin.lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+    validate: "sshd -t -f %s"
+  with_items:
+    - regexp: "^PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    - regexp: "^PermitRootLogin"
+      line: "PermitRootLogin no"
+    - regexp: "^Port"
+      line: "Port 22"
+  notify: Restart ssh
+
+# File permissions.
+- name: Configure the permissions for the messages log.
+  ansible.builtin.file:
+    path: /var/log/messages
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Ensure fail2ban is running and enabled on boot.
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: true
