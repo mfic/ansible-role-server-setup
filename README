@@ -2,7 +2,7 @@
 
 A vars file with the following variables is required:
 
-```yaml
+``` yaml
 users:
     - name: <name>
       group: <group>
